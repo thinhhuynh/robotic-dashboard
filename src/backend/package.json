@@ -1,0 +1,32 @@
+{
+  "name": "robot-fleet-backend",
+  "version": "1.0.0",
+  "description": "Robot Fleet Management Backend with uWebSockets.js",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "simulator": "node simulator/robot-simulator.js",
+    "cluster": "node cluster.js"
+  },
+  "dependencies": {
+    "uWebSockets.js": "uNetworking/uWebSockets.js#v20.33.0",
+    "mongodb": "^6.0.0",
+    "mongoose": "^8.14.2",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "websocket",
+    "mongodb",
+    "uws",
+    "real-time"
+  ],
+  "author": "",
+  "license": "MIT"
+}
