@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 
+import * as models from './models';
+
 const connectDB = async () => {
   try {
     await mongoose.connect('mongodb://localhost:27017/robot-fleet', {});
@@ -9,7 +11,12 @@ const connectDB = async () => {
   }
 };
 
-module.exports = {
+// module.exports = {
+//   connectDB,
+//   models: { Robot, },
+// };
+
+export {
   connectDB,
-  models: {},
+  models,
 };
