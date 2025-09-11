@@ -206,9 +206,76 @@ export default function DashboardPage() {
 
   return (
     <div style={{ padding: "24px", fontFamily: "Arial, sans-serif" }}>
-      <h1 style={{ marginBottom: "24px", color: "#1890ff" }}>
-        Robot Fleet Dashboard
-      </h1>
+      {/* Header with Dashboard WebSocket Status */}
+      <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
+            <h1 style={{ color: '#1890ff', margin: '0' }}>
+              🤖 Robot Fleet Dashboard
+            </h1>
+            
+            {/* Dashboard WebSocket Connection Status */}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              fontSize: '13px',
+              padding: '6px 10px',
+              backgroundColor: dashboardConnectionStatus === 'connected' ? '#f6ffed' : 
+                              dashboardConnectionStatus === 'connecting' ? '#fffbe6' : '#fff2f0',
+              borderRadius: '4px',
+              border: `1px solid ${dashboardConnectionStatus === 'connected' ? '#b7eb8f' : 
+                                 dashboardConnectionStatus === 'connecting' ? '#ffe58f' : '#ffccc7'}`
+            }}>
+              <span style={{ marginRight: '6px' }}>🔌</span>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div 
+                  style={{
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    backgroundColor: dashboardConnectionStatus === 'connected' ? '#52c41a' : 
+                                    dashboardConnectionStatus === 'connecting' ? '#faad14' : '#ff4d4f',
+                    marginRight: '4px',
+                  }}
+                />
+                <span style={{ 
+                  textTransform: 'capitalize',
+                  color: dashboardConnectionStatus === 'connected' ? '#52c41a' : 
+                         dashboardConnectionStatus === 'connecting' ? '#faad14' : '#ff4d4f',
+                  fontWeight: 'bold',
+                  fontSize: '12px'
+                }}>
+                  {dashboardConnectionStatus}
+                </span>
+                <span style={{ marginLeft: '4px', color: '#999', fontSize: '11px' }}>
+                  /dashboard
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <p style={{ color: '#666', fontSize: '16px', margin: '0' }}>
+            Monitor and manage your robot fleet in real-time
+          </p>
+        </div>
+        
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button 
+            onClick={fetchRobots}
+            style={{ 
+              padding: '8px 16px', 
+              backgroundColor: '#1890ff', 
+              color: 'white', 
+              border: 'none', 
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            🔄 Refresh
+          </button>
+        </div>
+      </div>
 
       {/* Statistics Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' }}>
@@ -484,34 +551,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Dashboard WebSocket Status Info */}
-      <div style={{ 
-        padding: '16px', 
-        backgroundColor: '#f9f9f9', 
-        borderRadius: '8px',
-        textAlign: 'center',
-        marginTop: '24px'
-      }}>
-        <div style={{ color: '#666', fontSize: '14px' }}>
-          Dashboard WebSocket Status: <span style={{
-            color: dashboardConnectionStatus === 'connected' ? '#52c41a' : 
-                   dashboardConnectionStatus === 'connecting' ? '#faad14' : '#ff4d4f',
-            fontWeight: 'bold'
-          }}>
-            {dashboardConnectionStatus.toUpperCase()}
-          </span>
-        </div>
-        {dashboardConnectionStatus === 'connected' && (
-          <div style={{ marginTop: '4px', fontSize: '12px', color: '#999' }}>
-            🔄 Listening for real-time fleet updates on /dashboard channel
-          </div>
-        )}
-        {dashboardConnectionStatus === 'disconnected' && (
-          <div style={{ marginTop: '4px', fontSize: '12px', color: '#ff4d4f' }}>
-            ⚠️ Real-time updates disabled. Check WebSocket connection.
-          </div>
-        )}
-      </div>
+      {/* Dashboard WebSocket Status Info - Moved to header */}
     </div>
   );
 }
