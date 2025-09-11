@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Robot, RobotDocument } from '../../database/schemas/robot.schema';
@@ -16,7 +16,40 @@ export class RobotService {
       ...data,
       timestamp: new Date(),
     });
-    return robotData.save();
+    const saved = await robotData.save();
+    // this.events.emit('telemetry.updated', { robotId, data: saved });
+    return saved;
+  }
+
+  async create(data: CreateRobotDataDto & { robotId: string }): Promise<Robot> {
+    return this.saveRobotData(data.robotId, data);
+  }
+
+  async upsert(data: CreateRobotDataDto & { robotId: string }): Promise<Robot> {
+    return this.robotModel.findOneAndUpdate(
+      { robotId: data.robotId },
+      { $set: data },
+      { upsert: true, new: true },
+    );
+  }
+
+  async findAll(query: any = {}): Promise<{ items: Robot[]; total: number; offset: number; limit: number }> {
+    const { offset = 0, limit = 20 } = query;
+    const [items, total] = await Promise.all([
+      this.robotModel.find().skip(offset).limit(limit).lean(),
+      this.robotModel.countDocuments(),
+    ]);
+    return { items, total, offset, limit };
+  }
+
+  async updateByIdParam(robotId: string, body: CreateRobotDataDto): Promise<Robot> {
+    const doc = await this.robotModel.findOneAndUpdate(
+      { robotId },
+      { $set: body },
+      { new: true },
+    );
+    if (!doc) throw new NotFoundException('Robot not found');
+    return doc;
   }
 
   async getLatestStatuses(): Promise<Robot[]> {
@@ -33,5 +66,17 @@ export class RobotService {
 
   async getAllRobots(): Promise<Robot[]> {
     return this.robotModel.find().sort({ timestamp: -1 }).exec();
+  }
+
+  async findOne(robotId: string): Promise<Robot> {
+    const robot = await this.robotModel.findOne({ robotId }).lean();
+    if (!robot) throw new NotFoundException('Robot not found');
+    return robot;
+  }
+
+  async remove(robotId: string) {
+    const result = await this.robotModel.deleteMany({ robotId });
+    if (result.deletedCount === 0) throw new NotFoundException('Robot not found');
+    return { deleted: true, deletedCount: result.deletedCount };
   }
 }

@@ -88,6 +88,7 @@ export class Robot {
 
 export const RobotSchema = SchemaFactory.createForClass(Robot);
 
+
 // Compound indexes for efficient queries
 RobotSchema.index({ robotId: 1, timestamp: -1 });
 RobotSchema.index({ battery: 1, charging: 1 }); // For alert queries
