@@ -62,7 +62,7 @@ async function bootstrap() {
     console.log(`🚀 Application running on port ${PORT}`);
     console.log(`📡 REST API: http://localhost:${PORT}`);
     console.log(`📖 API Docs: http://localhost:${PORT}/api/v1/docs`);
-    console.log(`🔌 WebSocket: ws://localhost:${PORT}/socket.io/`);
+    console.log(`🔌 WebSocket: ws://localhost:${PORT}/socket.io`);
     console.log(`💡 Test WebSocket: Open browser console and connect to ws://localhost:${PORT}`);
   });
 }

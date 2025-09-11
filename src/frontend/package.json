@@ -17,12 +17,14 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "recharts": "^2.8.0",
+    "socket.io-client": "^4.8.1",
     "ws": "^8.14.2"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@types/socket.io-client": "^3.0.0",
     "@types/ws": "^8.5.8",
     "eslint": "^8.0.0",
     "eslint-config-next": "^14.0.0",
