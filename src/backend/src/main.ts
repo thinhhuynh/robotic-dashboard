@@ -17,6 +17,19 @@ import { SocketIoAdapter } from 'src/infrastructure/socket/socket-io.adapter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
+  // Enable CORS for frontend
+  const corsOrigins = process.env.CORS_ORIGIN?.split(',') || [
+    'http://localhost:3000', 
+    'http://127.0.0.1:3000'
+  ];
+  
+  app.enableCors({
+    origin: corsOrigins,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  });
+
   // global prefix
   app.useGlobalPipes(
     new ValidationPipe({
@@ -31,6 +44,8 @@ async function bootstrap() {
     type: VersioningType.URI, // Or VersioningType.HEADER
     prefix: 'v1', // Optional: prefix for URI versioning (e.g., /v1, /v2)
   });
+
+  
 
   // documentation
   const configDocument = new DocumentBuilder()

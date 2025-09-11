@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestj
 import { RobotService } from './robot.service';
 import { CreateRobotDataDto } from '../../common/dto/robot-data.dto';
 import { Robot } from '../../database/schemas/robot.schema';
+import { API_PREFIX } from '../constant';
 
 export class CreateRobotRequest extends CreateRobotDataDto {
   robotId?: string; // Optional, will be generated if not provided
@@ -14,7 +15,7 @@ export class QueryRobotRequest {
   limit?: number;
 }
 
-@Controller('robots')
+@Controller(`${API_PREFIX}/robots`)
 export class RobotController {
   constructor(private readonly robotService: RobotService) {}
 
