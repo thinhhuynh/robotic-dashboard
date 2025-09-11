@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { RobotTelemetryGateway } from './gateways/robot-telemetry.gateway';
+import { RobotGateway } from './gateways/robot.gateway';
 
 @Module({
   imports: [EventEmitterModule.forRoot()],
-  providers: [RobotTelemetryGateway],
+  providers: [RobotGateway],
   exports: [EventEmitterModule],
 })
 export class SocketModule {}

@@ -768,8 +768,7 @@ export default function RobotDetailPage() {
             <h3 style={{ marginBottom: '16px', color: '#1890ff' }}>
               📋 History Records ({historyData.length} entries)
             </h3>
-            
-            {historyLoading ? (
+          {historyLoading ? (
               <div style={{ 
                 textAlign: 'center', 
                 padding: '40px',
@@ -788,79 +787,212 @@ export default function RobotDetailPage() {
               </div>
             ) : (
               <div style={{ 
-                maxHeight: '500px', 
-                overflowY: 'auto',
                 border: '1px solid #f0f0f0',
-                borderRadius: '4px'
+                borderRadius: '4px',
+                overflow: 'hidden'
               }}>
-                {historyData.map((record, index) => (
-                  <div 
-                    key={index}
-                    style={{ 
-                      padding: '16px',
-                      borderBottom: index < historyData.length - 1 ? '1px solid #f0f0f0' : 'none',
-                      backgroundColor: index % 2 === 0 ? '#fafafa' : '#ffffff'
-                    }}
-                  >
-                    <div style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: '8px'
-                    }}>
-                      <div style={{ 
-                        fontSize: '14px', 
-                        fontWeight: 'bold',
-                        color: '#262626'
-                      }}>
-                        {new Date(record.timestamp).toLocaleString()}
-                      </div>
-                      <div style={{
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        backgroundColor: 
-                          record.status === 'online' ? '#f6ffed' : 
-                          record.status === 'offline' ? '#fff2f0' : '#fff7e6',
-                        color:
-                          record.status === 'online' ? '#52c41a' : 
-                          record.status === 'offline' ? '#ff4d4f' : '#faad14'
-                      }}>
-                        {record.status.toUpperCase()}
-                      </div>
-                    </div>
-                    
-                    <div style={{ 
-                      display: 'grid', 
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
-                      gap: '12px',
-                      fontSize: '14px',
-                      color: '#666'
-                    }}>
-                      <div>🔋 Battery: <strong>{record.battery}%</strong></div>
-                      <div>🌡️ Temp: <strong>{record.temperature}°C</strong></div>
-                      <div>💾 Memory: <strong>{record.memory}%</strong></div>
-                      {record.location && (
-                        <div>📍 Location: <strong>({record.location.x.toFixed(1)}, {record.location.y.toFixed(1)})</strong></div>
-                      )}
-                    </div>
-                    
-                    {(record.event || record.message) && (
-                      <div style={{ 
-                        marginTop: '8px',
-                        padding: '8px 12px',
-                        backgroundColor: '#f0f0f0',
-                        borderRadius: '4px',
+                {/* Table Header */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '200px 120px 100px 100px 120px 140px 120px 1fr',
+                  backgroundColor: '#fafafa',
+                  borderBottom: '2px solid #d9d9d9',
+                  fontWeight: 'bold',
+                  fontSize: '14px',
+                  color: '#262626'
+                }}>
+                  <div style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
+                    📅 Timestamp
+                  </div>
+                  <div style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
+                    🔴 Status
+                  </div>
+                  <div style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
+                    🔋 Battery
+                  </div>
+                  <div style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
+                    🌡️ Temp
+                  </div>
+                  <div style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
+                    💾 Memory
+                  </div>
+                  <div style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
+                    📍 Location
+                  </div>
+                  <div style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
+                    📝 Event
+                  </div>
+                  <div style={{ padding: '12px 16px' }}>
+                    💬 Message
+                  </div>
+                </div>
+
+                {/* Table Body */}
+                <div style={{ 
+                  maxHeight: '500px', 
+                  overflowY: 'auto'
+                }}>
+                  {historyData.map((record, index) => (
+                    <div 
+                      key={index}
+                      style={{ 
+                        display: 'grid',
+                        gridTemplateColumns: '200px 120px 100px 100px 120px 140px 120px 1fr',
+                        borderBottom: index < historyData.length - 1 ? '1px solid #f0f0f0' : 'none',
+                        backgroundColor: index % 2 === 0 ? '#ffffff' : '#fafafa',
                         fontSize: '13px',
                         color: '#595959'
+                      }}
+                    >
+                      {/* Timestamp */}
+                      <div style={{ 
+                        padding: '12px 16px', 
+                        borderRight: '1px solid #f0f0f0',
+                        fontWeight: '500',
+                        color: '#262626'
                       }}>
-                        {record.event && <div><strong>Event:</strong> {record.event}</div>}
-                        {record.message && <div><strong>Message:</strong> {record.message}</div>}
+                        <div>{new Date(record.timestamp).toLocaleDateString()}</div>
+                        <div style={{ fontSize: '12px', color: '#8c8c8c' }}>
+                          {new Date(record.timestamp).toLocaleTimeString()}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                ))}
+
+                      {/* Status */}
+                      <div style={{ 
+                        padding: '12px 16px', 
+                        borderRight: '1px solid #f0f0f0',
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}>
+                        <span style={{
+                          padding: '4px 8px',
+                          borderRadius: '12px',
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                          textTransform: 'uppercase',
+                          backgroundColor: 
+                            record.status === 'online' ? '#f6ffed' : 
+                            record.status === 'offline' ? '#fff2f0' : '#fff7e6',
+                          color:
+                            record.status === 'online' ? '#52c41a' : 
+                            record.status === 'offline' ? '#ff4d4f' : '#faad14',
+                          border: `1px solid ${
+                            record.status === 'online' ? '#b7eb8f' : 
+                            record.status === 'offline' ? '#ffccc7' : '#ffd666'
+                          }`
+                        }}>
+                          {record.status}
+                        </span>
+                      </div>
+
+                      {/* Battery */}
+                      <div style={{ 
+                        padding: '12px 16px', 
+                        borderRight: '1px solid #f0f0f0',
+                        textAlign: 'center',
+                        fontWeight: '500'
+                      }}>
+                        <div style={{
+                          color: record.battery > 70 ? '#52c41a' : 
+                                 record.battery > 30 ? '#faad14' : '#ff4d4f'
+                        }}>
+                          {record.battery}%
+                        </div>
+                      </div>
+
+                      {/* Temperature */}
+                      <div style={{ 
+                        padding: '12px 16px', 
+                        borderRight: '1px solid #f0f0f0',
+                        textAlign: 'center',
+                        fontWeight: '500'
+                      }}>
+                        <div style={{
+                          color: record.temperature > 30 ? '#ff4d4f' : 
+                                 record.temperature < 10 ? '#1890ff' : '#52c41a'
+                        }}>
+                          {record.temperature}°C
+                        </div>
+                      </div>
+
+                      {/* Memory */}
+                      <div style={{ 
+                        padding: '12px 16px', 
+                        borderRight: '1px solid #f0f0f0',
+                        textAlign: 'center',
+                        fontWeight: '500'
+                      }}>
+                        <div style={{
+                          color: record.memory > 80 ? '#ff4d4f' : 
+                                 record.memory > 60 ? '#faad14' : '#52c41a'
+                        }}>
+                          {record.memory}%
+                        </div>
+                      </div>
+
+                      {/* Location */}
+                      <div style={{ 
+                        padding: '12px 16px', 
+                        borderRight: '1px solid #f0f0f0',
+                        fontSize: '12px'
+                      }}>
+                        {record.location ? (
+                          <div>
+                            <div>X: {record.location.x.toFixed(1)}</div>
+                            <div>Y: {record.location.y.toFixed(1)}</div>
+                            {record.location.z !== undefined && (
+                              <div>Z: {record.location.z.toFixed(1)}</div>
+                            )}
+                          </div>
+                        ) : (
+                          <span style={{ color: '#bfbfbf', fontStyle: 'italic' }}>
+                            No location
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Event */}
+                      <div style={{ 
+                        padding: '12px 16px', 
+                        borderRight: '1px solid #f0f0f0',
+                        fontSize: '12px'
+                      }}>
+                        {record.event ? (
+                          <span style={{
+                            padding: '2px 6px',
+                            backgroundColor: '#e6f7ff',
+                            color: '#1890ff',
+                            borderRadius: '4px',
+                            fontSize: '11px'
+                          }}>
+                            {record.event}
+                          </span>
+                        ) : (
+                          <span style={{ color: '#bfbfbf', fontStyle: 'italic' }}>
+                            -
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Message */}
+                      <div style={{ 
+                        padding: '12px 16px',
+                        fontSize: '12px',
+                        lineHeight: '1.4'
+                      }}>
+                        {record.message ? (
+                          <span style={{ color: '#595959' }}>
+                            {record.message}
+                          </span>
+                        ) : (
+                          <span style={{ color: '#bfbfbf', fontStyle: 'italic' }}>
+                            No message
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

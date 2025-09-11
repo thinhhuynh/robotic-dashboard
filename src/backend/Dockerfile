@@ -10,11 +10,13 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-# RUN npm ci --only=production
-RUN npm i
+RUN yarn
 
 # Copy application code
 COPY . .
+
+# Build the NestJS application
+RUN npm run build
 
 # Create non-root user
 RUN addgroup -g 1001 -S weenapp && \
@@ -25,6 +27,10 @@ RUN chown -R weenapp:weenapp /app
 
 USER weenapp
 
-EXPOSE 9001
+EXPOSE 8080
 
-CMD ["node", "app.js"]
+# Set environment to production
+ENV NODE_ENV=production
+
+# Start the application
+CMD ["npm", "run", "start:prod"]

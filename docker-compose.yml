@@ -72,7 +72,7 @@ services:
   simulator:
     build:
       context: ./src/backend
-      dockerfile: Dockerfile.simulator
+      dockerfile: Dockerfile
     container_name: robot-fleet-simulator
     restart: unless-stopped
     environment:
@@ -84,7 +84,7 @@ services:
     networks:
       - robotic-dashboard-network
     volumes:
-      - ./backend/simulator:/app
+      - ./src/backend/simulator:/app
 
   # Frontend Next.js Application
   frontend:
@@ -97,13 +97,14 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_WS_URL: ws://localhost:9001/dashboard
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8080
+      NEXT_PUBLIC_WS_URL: http://localhost:8080
     depends_on:
       - backend
     networks:
       - robotic-dashboard-network
     volumes:
-      - ./frontend:/app
+      - ./src/frontend:/app
       - /app/node_modules
       - /app/.next
 

@@ -169,7 +169,8 @@ export default function DashboardPage() {
                 fontWeight: 'bold',
                 fontSize: '14px',
                 color: '#262626',
-                borderRight: '1px solid #f0f0f0'
+                borderRight: '1px solid #f0f0f0',
+                width: '120px'
               }}>
                 🔋 Battery
               </th>
@@ -189,7 +190,8 @@ export default function DashboardPage() {
                 fontWeight: 'bold',
                 fontSize: '14px',
                 color: '#262626',
-                borderRight: '1px solid #f0f0f0'
+                borderRight: '1px solid #f0f0f0',
+                width: '140px'
               }}>
                 🌡️ Temperature
               </th>
@@ -199,7 +201,8 @@ export default function DashboardPage() {
                 fontWeight: 'bold',
                 fontSize: '14px',
                 color: '#262626',
-                borderRight: '1px solid #f0f0f0'
+                borderRight: '1px solid #f0f0f0',
+                width: '140px'
               }}>
                 💾 Memory Usage
               </th>

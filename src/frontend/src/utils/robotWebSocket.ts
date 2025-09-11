@@ -14,7 +14,7 @@ export class RobotWebSocketManager {
       this.notifyStatusCallbacks();
 
       // Connect using native WebSocket API
-      const ws = new WebSocket('http://localhost:8080/socket.io'); // Adjust URL as needed
+      const ws = new WebSocket('http://localhost:8080/robot'); // Adjust URL as needed
       const eventListeners = new Map<string, Function[]>();
       
       this.socket = {

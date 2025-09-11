@@ -26,40 +26,90 @@ export function useRobotWebSocket(robotId: string, enabled: boolean = true) {
   useEffect(() => {
     if (!enabled || !robotId) return;
 
+    useEffect(() => {
+    if (!enabled || !robotId) return;
+
     const connectWebSocket = async () => {
       try {
+        // Use Socket.IO client to connect to NestJS gateway
         const { io } = await import('socket.io-client');
         
-        console.log(`🔌 Connecting to WebSocket for robot: ${robotId}`);
+        console.log(`🔌 Connecting to NestJS Robot Gateway for robot: ${robotId}`);
         setConnectionStatus('connecting');
 
-        // Connect directly to standalone WebSocket server (no Socket.IO suffix)
-        const wsUrl = `http://localhost:8080/socket.io`;
-        console.log(`🔌 Connecting to Robot WebSocket: ${wsUrl}`);
-        
-        const ws = new WebSocket(wsUrl);
-        const newSocket = {
-          connected: false,
-          id: Math.random().toString(36).substr(2, 9),
-          ws: ws,
-          emit: (event: string, data?: any) => {
-            if (ws.readyState === WebSocket.OPEN) {
-              ws.send(JSON.stringify({ event, data }));
-            }
-          },
-          on: (event: string, callback: Function) => {
-            // Store event listeners for message handling
-            if (!newSocket.eventListeners) newSocket.eventListeners = new Map();
-            if (!newSocket.eventListeners.has(event)) {
-              newSocket.eventListeners.set(event, []);
-            }
-            newSocket.eventListeners.get(event).push(callback);
-          },
-          disconnect: () => {
-            ws.close();
-          },
-          eventListeners: new Map()
-        };
+        const newSocket = io('http://localhost:8080', {
+          transports: ['websocket', 'polling'],
+          timeout: 10000,
+          forceNew: true,
+          autoConnect: true,
+        });
+
+        newSocket.on('connect', () => {
+          console.log('✅ Connected to NestJS Robot Gateway');
+          console.log(`📡 Socket ID: ${newSocket.id}`);
+          setConnectionStatus('connected');
+          
+          // Subscribe to specific robot channel
+          const robotChannel = `robot:${robotId}`;
+          newSocket.emit('subscribe', robotChannel);
+          console.log(`� Subscribed to channel: ${robotChannel}`);
+          
+          // Request initial robot data
+          newSocket.emit('get-robot-data', robotId);
+        });
+
+        newSocket.on('disconnect', () => {
+          console.log('❌ Disconnected from NestJS Robot Gateway');
+          setConnectionStatus('disconnected');
+        });
+
+        newSocket.on('connect_error', (error) => {
+          console.error('❌ NestJS Gateway connection error:', error);
+          setConnectionStatus('disconnected');
+        });
+
+        // Handle gateway events
+        newSocket.on('connection', (data) => {
+          console.log('📨 Gateway welcome message:', data);
+          addUpdate('subscription', data);
+        });
+
+        newSocket.on('subscription-confirmed', (data) => {
+          console.log('✅ Subscription confirmed:', data);
+          addUpdate('subscription', data);
+        });
+
+        newSocket.on('command-confirmed', (data) => {
+          console.log('🎮 Command confirmed:', data);
+          addUpdate('command', data);
+        });
+
+        // Handle robot-specific events
+        newSocket.on(`robot:${robotId}:update`, (data) => {
+          console.log(`📊 Robot ${robotId} update:`, data);
+          addUpdate('update', data);
+        });
+
+        newSocket.on(`robot:${robotId}:status`, (status) => {
+          console.log(`📡 Robot ${robotId} status:`, status);
+          addUpdate('status', { status });
+        });
+
+        newSocket.on(`robot:${robotId}:data`, (data) => {
+          console.log(`📋 Robot ${robotId} data received:`, data);
+          addUpdate('full-data', { message: 'Full robot data received' });
+        });
+
+        setSocket(newSocket);
+
+      } catch (error) {
+        console.error('Failed to connect to NestJS Gateway:', error);
+        console.log('💡 Install socket.io-client: npm install socket.io-client');
+        setConnectionStatus('disconnected');
+      }
+    };
+
+    connectWebSocket();
 
         ws.onopen = () => {
           console.log('✅ WebSocket connected');
@@ -147,7 +197,7 @@ export function useRobotWebSocket(robotId: string, enabled: boolean = true) {
       addUpdate('command-sent', payload);
       return true;
     }
-    console.warn('WebSocket not connected, cannot send command');
+    console.warn('Socket.IO not connected, cannot send command');
     return false;
   }, [socket, connectionStatus, robotId, addUpdate]);
 
