@@ -7,7 +7,8 @@ import {
   Min, 
   Max,
   ValidateNested,
-  IsDate
+  IsDate,
+  IsUUID
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -35,6 +36,10 @@ class ErrorDto {
 }
 
 export class CreateRobotDataDto {
+  @IsOptional()
+  @IsUUID(4)
+  robotId?: string;
+
   @IsEnum(['online', 'offline', 'maintenance'])
   status: string;
 

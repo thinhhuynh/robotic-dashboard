@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 import { Robot, RobotDocument } from '../../database/schemas/robot.schema';
 import { CreateRobotDataDto } from '../../common/dto/robot-data.dto';
 
@@ -21,14 +22,16 @@ export class RobotService {
     return saved;
   }
 
-  async create(data: CreateRobotDataDto & { robotId: string }): Promise<Robot> {
-    return this.saveRobotData(data.robotId, data);
+  async create(data: CreateRobotDataDto & { robotId?: string }): Promise<Robot> {
+    const robotId = data.robotId || uuidv4();
+    return this.saveRobotData(robotId, data);
   }
 
-  async upsert(data: CreateRobotDataDto & { robotId: string }): Promise<Robot> {
+  async upsert(data: CreateRobotDataDto & { robotId?: string }): Promise<Robot> {
+    const robotId = data.robotId || uuidv4();
     return this.robotModel.findOneAndUpdate(
-      { robotId: data.robotId },
-      { $set: data },
+      { robotId },
+      { $set: { ...data, robotId } },
       { upsert: true, new: true },
     );
   }

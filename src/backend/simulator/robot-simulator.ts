@@ -1,6 +1,8 @@
 import { io, Socket } from 'socket.io-client';
+import { v4 as uuidv4 } from 'uuid';
 
 interface RobotData {
+  robotId?: string;
   status: 'online' | 'offline' | 'maintenance';
   battery: number;
   wifiStrength: number;
@@ -24,10 +26,10 @@ class RobotSimulator {
   private robotId: string;
   private intervalId: NodeJS.Timeout;
 
-  constructor(robotId: string, serverUrl = 'http://localhost:8080') {
-    this.robotId = robotId;
+  constructor(robotId?: string, serverUrl = 'http://localhost:8080') {
+    this.robotId = robotId || uuidv4();
     this.socket = io(`${serverUrl}/robots`, {
-      query: { robotId }
+      query: { robotId: this.robotId }
     });
 
     this.setupEventHandlers();
@@ -55,6 +57,7 @@ class RobotSimulator {
     const statuses: Array<'online' | 'offline' | 'maintenance'> = ['online', 'offline', 'maintenance'];
     
     return {
+      robotId: this.robotId,
       status: statuses[Math.floor(Math.random() * statuses.length)],
       battery: Math.floor(Math.random() * 101),
       wifiStrength: Math.floor(Math.random() * 101) - 100,
@@ -90,7 +93,9 @@ const robots: RobotSimulator[] = [];
 const robotCount = parseInt(process.env.ROBOT_COUNT || '3');
 
 for (let i = 1; i <= robotCount; i++) {
-  const robot = new RobotSimulator(`robot-${i.toString().padStart(3, '0')}`);
+  // Generate UUID for each robot or use a predictable format for testing
+  const robotId = process.env.USE_UUID_ROBOTS === 'true' ? uuidv4() : `robot-${i.toString().padStart(3, '0')}`;
+  const robot = new RobotSimulator(robotId);
   robots.push(robot);
 }
 

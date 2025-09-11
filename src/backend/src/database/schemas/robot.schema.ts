@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 
 export type RobotDocument = Robot & Document;
 
@@ -8,7 +9,12 @@ export type RobotDocument = Robot & Document;
   collection: 'robot_telemetry' 
 })
 export class Robot {
-  @Prop({ required: true, index: true })
+  @Prop({ 
+    type: String,
+    required: true, 
+    index: true,
+    default: uuidv4
+  })
   robotId: string;
 
   @Prop({ 

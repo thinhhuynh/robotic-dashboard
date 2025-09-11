@@ -1,19 +1,10 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Delete,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { RobotService } from './robot.service';
 import { CreateRobotDataDto } from '../../common/dto/robot-data.dto';
 import { Robot } from '../../database/schemas/robot.schema';
 
 export class CreateRobotRequest extends CreateRobotDataDto {
-  robotId: string;
+  robotId?: string; // Optional, will be generated if not provided
 }
 
 export class UpdateRobotRequest extends CreateRobotDataDto {}
@@ -23,9 +14,7 @@ export class QueryRobotRequest {
   limit?: number;
 }
 
-import { API_PREFIX } from '../constant';
-
-@Controller(`${API_PREFIX}/robots`)
+@Controller('robots')
 export class RobotController {
   constructor(private readonly robotService: RobotService) {}
 
