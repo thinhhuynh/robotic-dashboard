@@ -12,9 +12,11 @@ import { OnEvent } from '@nestjs/event-emitter';
 
 @WebSocketGateway({
   cors: {
+    
     origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001'],
     credentials: true,
   },
+  namespace: 'robot',
   transports: ['websocket', 'polling'],
   allowEIO3: true,
 })
@@ -85,7 +87,7 @@ export class RobotGateway
   ) {
     console.log(`📊 Client ${client.id} requesting data for robot: ${robotId}`);
     
-    // Generate mock robot data
+    // Generate mock robot data or fetch from database
     const robotData = this.generateMockRobotData(robotId);
     
     // Send robot data

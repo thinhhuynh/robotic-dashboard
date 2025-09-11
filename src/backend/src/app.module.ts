@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './modules/health/health.module';
 import { RobotModule } from './modules/robot/robot.module';
-// import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { RobotGateway } from './infrastructure/socket/gateways/robot.gateway';
 import configuration from './config/configuration';
 
 @Module({
@@ -16,7 +16,7 @@ import configuration from './config/configuration';
     DatabaseModule,
     HealthModule,
     RobotModule,
-    // DashboardModule,
   ],
+  providers: [RobotGateway],
 })
 export class AppModule {}

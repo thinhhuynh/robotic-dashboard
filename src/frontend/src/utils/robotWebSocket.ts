@@ -9,83 +9,62 @@ export class RobotWebSocketManager {
 
   async connect(): Promise<boolean> {
     try {
-      console.log(`🔌 Connecting to WebSocket for robot: ${this.robotId}`);
+      console.log(`🔌 Connecting to Socket.IO for robot: ${this.robotId}`);
       this.connectionStatus = 'connecting';
       this.notifyStatusCallbacks();
 
-      // Connect using native WebSocket API
-      const ws = new WebSocket('http://localhost:8080/robot'); // Adjust URL as needed
-      const eventListeners = new Map<string, Function[]>();
+      // Use Socket.IO client to connect to NestJS gateway
+      const { io } = await import('socket.io-client');
       
-      this.socket = {
-        ws: ws,
-        eventListeners: eventListeners,
-        emit: (event: string, data?: any) => {
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ event, data }));
-          }
-        },
-        on: (event: string, callback: Function) => {
-          if (!eventListeners.has(event)) {
-            eventListeners.set(event, []);
-          }
-          eventListeners.get(event)!.push(callback);
-        },
-        disconnect: () => {
-          ws.close();
-        }
-      };
+      const socket = io('http://localhost:8080', {
+        transports: ['websocket', 'polling'],
+        timeout: 10000,
+        forceNew: true,
+        autoConnect: true,
+      });
 
-      ws.onopen = () => {
-        console.log('✅ WebSocket connected');
+      this.socket = socket;
+
+      socket.on('connect', () => {
+        console.log('✅ Socket.IO connected');
+        console.log(`📡 Socket ID: ${socket.id}`);
         this.connectionStatus = 'connected';
         this.notifyStatusCallbacks();
         
         // Subscribe to robot channel
         const robotChannel = `robot:${this.robotId}`;
-        this.socket.emit('subscribe', robotChannel);
+        socket.emit('subscribe', robotChannel);
         console.log(`📡 Subscribed to channel: ${robotChannel}`);
         
         // Request initial data
-        this.socket.emit('get-robot-data', this.robotId);
-      };
+        socket.emit('get-robot-data', this.robotId);
+      });
 
-      ws.onclose = () => {
-        console.log('❌ WebSocket disconnected');
+      socket.on('disconnect', () => {
+        console.log('❌ Socket.IO disconnected');
         this.connectionStatus = 'disconnected';
         this.notifyStatusCallbacks();
-      };
+      });
 
-      ws.onerror = (error) => {
-        console.error('❌ WebSocket connection error:', error);
+      socket.on('connect_error', (error) => {
+        console.error('❌ Socket.IO connection error:', error);
         this.connectionStatus = 'disconnected';
         this.notifyStatusCallbacks();
-      };
+      });
 
-      ws.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          const { event: eventName, data } = message;
-          
-          console.log(`📨 Received WebSocket event: ${eventName}`);
-          
-          // Trigger appropriate event listeners
-          if (eventListeners.has(eventName)) {
-            eventListeners.get(eventName)!.forEach((callback: Function) => {
-              callback(data);
-            });
-          }
-        } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
-        }
-      };
+      // Handle gateway welcome message
+      socket.on('connection', (data) => {
+        console.log('📨 Gateway welcome message:', data);
+        this.addUpdate('subscription', data);
+      });
 
       // Set up robot-specific event listeners
       this.setupRobotEventListeners();
 
       return true;
     } catch (error) {
-      console.error('Failed to connect to WebSocket:', error);
+      console.error('Failed to connect to Socket.IO:', error);
+      console.log('💡 Install socket.io-client: npm install socket.io-client');
       this.connectionStatus = 'disconnected';
       this.notifyStatusCallbacks();
       return false;

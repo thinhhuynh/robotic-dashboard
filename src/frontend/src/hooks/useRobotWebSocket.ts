@@ -37,7 +37,7 @@ export function useRobotWebSocket(robotId: string, enabled: boolean = true) {
         console.log(`🔌 Connecting to NestJS Robot Gateway for robot: ${robotId}`);
         setConnectionStatus('connecting');
 
-        const newSocket = io('http://localhost:8080', {
+        const newSocket = io('http://localhost:8080/robot', {
           transports: ['websocket', 'polling'],
           timeout: 10000,
           forceNew: true,
