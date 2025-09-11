@@ -36,6 +36,11 @@ export default function DashboardPage() {
   const [robots, setRobots] = useState<Robot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Dashboard WebSocket states
+  const [dashboardSocket, setDashboardSocket] = useState<any>(null);
+  const [dashboardConnectionStatus, setDashboardConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
+  const [realTimeUpdates, setRealTimeUpdates] = useState<any[]>([]);
 
   const fetchRobots = async () => {
     try {
@@ -51,9 +56,114 @@ export default function DashboardPage() {
     }
   };
 
+  // Initialize Dashboard WebSocket connection
+  const initializeDashboardWebSocket = async () => {
+    try {
+      console.log('🔌 Connecting to Dashboard WebSocket...');
+      setDashboardConnectionStatus('connecting');
+
+      // Use Socket.IO client to connect to dashboard namespace
+      const { io } = await import('socket.io-client');
+      
+      const socket = io('http://localhost:8080/dashboard', {
+        transports: ['websocket', 'polling'],
+        timeout: 10000,
+        forceNew: true,
+        autoConnect: true,
+      });
+
+      socket.on('connect', () => {
+        console.log('✅ Dashboard WebSocket connected');
+        console.log(`📡 Dashboard Socket ID: ${socket.id}`);
+        setDashboardConnectionStatus('connected');
+        
+        // Subscribe to dashboard updates
+        socket.emit('subscribe', 'dashboard-updates');
+        console.log('📡 Subscribed to dashboard updates');
+      });
+
+      socket.on('disconnect', () => {
+        console.log('❌ Dashboard WebSocket disconnected');
+        setDashboardConnectionStatus('disconnected');
+      });
+
+      socket.on('connect_error', (error) => {
+        console.error('❌ Dashboard WebSocket connection error:', error);
+        setDashboardConnectionStatus('disconnected');
+      });
+
+      // Handle dashboard-specific events
+      socket.on('dashboard-update', (data) => {
+        console.log('📊 Dashboard update received:', data);
+        setRealTimeUpdates(prev => [{
+          timestamp: new Date().toISOString(),
+          type: 'dashboard-update',
+          data
+        }, ...prev.slice(0, 9)]);
+        
+        // Update robots data if it's a fleet update
+        if (data.type === 'fleet-update' && data.robots) {
+          setRobots(data.robots);
+        }
+      });
+
+      socket.on('robot-status-change', (data) => {
+        console.log('🤖 Robot status change:', data);
+        setRealTimeUpdates(prev => [{
+          timestamp: new Date().toISOString(),
+          type: 'robot-status-change',
+          data
+        }, ...prev.slice(0, 9)]);
+        
+        // Update specific robot in the list
+        if (data.robotId) {
+          setRobots(prev => prev.map(robot => 
+            robot.robotId === data.robotId 
+              ? { ...robot, ...data.updates, timestamp: new Date().toISOString() }
+              : robot
+          ));
+        }
+      });
+
+      socket.on('fleet-statistics', (data) => {
+        console.log('📈 Fleet statistics update:', data);
+        setRealTimeUpdates(prev => [{
+          timestamp: new Date().toISOString(),
+          type: 'fleet-statistics',
+          data
+        }, ...prev.slice(0, 9)]);
+      });
+
+      setDashboardSocket(socket);
+
+    } catch (error) {
+      console.error('Failed to connect to Dashboard WebSocket:', error);
+      console.log('💡 Install socket.io-client: npm install socket.io-client');
+      setDashboardConnectionStatus('disconnected');
+    }
+  };
+
   useEffect(() => {
     fetchRobots();
   }, []);
+
+  // Initialize Dashboard WebSocket after initial data load
+  useEffect(() => {
+    if (!loading && !error && !dashboardSocket) {
+      console.log('🚀 Initializing Dashboard WebSocket...');
+      initializeDashboardWebSocket();
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (dashboardSocket) {
+        console.log('🧹 Cleaning up Dashboard WebSocket connection...');
+        dashboardSocket.emit('unsubscribe', 'dashboard-updates');
+        dashboardSocket.disconnect();
+        setDashboardSocket(null);
+      }
+    };
+  }, [loading, error, dashboardSocket]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -312,6 +422,95 @@ export default function DashboardPage() {
 
       <div style={{ marginTop: '16px', textAlign: 'center', color: '#666' }}>
         Showing {robots.length} robots
+      </div>
+
+      {/* Real-time Dashboard Updates */}
+      {dashboardConnectionStatus === 'connected' && realTimeUpdates.length > 0 && (
+        <div style={{ 
+          padding: '20px', 
+          border: '1px solid #d9d9d9', 
+          borderRadius: '8px',
+          marginTop: '24px'
+        }}>
+          <h3 style={{ marginBottom: '16px', color: '#1890ff' }}>📈 Real-time Dashboard Updates</h3>
+          
+          <div style={{ 
+            maxHeight: '200px', 
+            overflowY: 'auto',
+            border: '1px solid #f0f0f0',
+            borderRadius: '4px',
+            padding: '12px',
+            backgroundColor: '#fafafa'
+          }}>
+            {realTimeUpdates.map((update, index) => (
+              <div 
+                key={index}
+                style={{ 
+                  padding: '8px 12px',
+                  marginBottom: '8px',
+                  backgroundColor: update.type === 'dashboard-update' ? '#e6f7ff' : 
+                                  update.type === 'robot-status-change' ? '#f6ffed' :
+                                  update.type === 'fleet-statistics' ? '#fff7e6' : '#f0f0f0',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  borderLeft: '3px solid ' + (
+                    update.type === 'dashboard-update' ? '#1890ff' : 
+                    update.type === 'robot-status-change' ? '#52c41a' :
+                    update.type === 'fleet-statistics' ? '#faad14' : '#d9d9d9'
+                  )
+                }}
+              >
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '4px'
+                }}>
+                  <span style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>
+                    {update.type === 'dashboard-update' ? '📊 DASHBOARD UPDATE' : 
+                     update.type === 'robot-status-change' ? '🤖 ROBOT STATUS' :
+                     update.type === 'fleet-statistics' ? '📈 FLEET STATS' : '📨 UPDATE'}
+                  </span>
+                  <span style={{ fontSize: '12px', color: '#666' }}>
+                    {new Date(update.timestamp).toLocaleTimeString()}
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#666' }}>
+                  {JSON.stringify(update.data, null, 2)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Dashboard WebSocket Status Info */}
+      <div style={{ 
+        padding: '16px', 
+        backgroundColor: '#f9f9f9', 
+        borderRadius: '8px',
+        textAlign: 'center',
+        marginTop: '24px'
+      }}>
+        <div style={{ color: '#666', fontSize: '14px' }}>
+          Dashboard WebSocket Status: <span style={{
+            color: dashboardConnectionStatus === 'connected' ? '#52c41a' : 
+                   dashboardConnectionStatus === 'connecting' ? '#faad14' : '#ff4d4f',
+            fontWeight: 'bold'
+          }}>
+            {dashboardConnectionStatus.toUpperCase()}
+          </span>
+        </div>
+        {dashboardConnectionStatus === 'connected' && (
+          <div style={{ marginTop: '4px', fontSize: '12px', color: '#999' }}>
+            🔄 Listening for real-time fleet updates on /dashboard channel
+          </div>
+        )}
+        {dashboardConnectionStatus === 'disconnected' && (
+          <div style={{ marginTop: '4px', fontSize: '12px', color: '#ff4d4f' }}>
+            ⚠️ Real-time updates disabled. Check WebSocket connection.
+          </div>
+        )}
       </div>
     </div>
   );

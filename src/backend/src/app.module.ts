@@ -4,6 +4,7 @@ import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './modules/health/health.module';
 import { RobotModule } from './modules/robot/robot.module';
 import { RobotGateway } from './infrastructure/socket/gateways/robot.gateway';
+import { DashboardGateway } from './infrastructure/socket/gateways/dashboard.gateway';
 import configuration from './config/configuration';
 
 @Module({
@@ -17,6 +18,6 @@ import configuration from './config/configuration';
     HealthModule,
     RobotModule,
   ],
-  providers: [RobotGateway],
+  providers: [RobotGateway, DashboardGateway],
 })
 export class AppModule {}

@@ -12,6 +12,18 @@ export class HealthController {
       environment: process.env.NODE_ENV || 'development',
       uptime: process.uptime(),
       memory: process.memoryUsage(),
+      websockets: {
+        robot: {
+          namespace: '/',
+          endpoint: 'ws://localhost:8080/socket.io/',
+          description: 'Individual robot control and monitoring'
+        },
+        dashboard: {
+          namespace: '/dashboard',
+          endpoint: 'ws://localhost:8080/dashboard',
+          description: 'Fleet dashboard real-time updates'
+        }
+      }
     };
   }
 
