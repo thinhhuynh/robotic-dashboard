@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { API_CONFIG, apiRequest } from '../../../../config/api';
 
 interface Robot {
   _id: string;
@@ -37,13 +38,7 @@ export default function RobotDetailPage() {
   const fetchRobotDetail = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8080/api/v1/robots/${robotId}`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data: Robot = await response.json();
+      const data: Robot = await apiRequest<Robot>(API_CONFIG.ENDPOINTS.ROBOT_DETAIL(robotId));
       setRobot(data);
       setError(null);
     } catch (err) {

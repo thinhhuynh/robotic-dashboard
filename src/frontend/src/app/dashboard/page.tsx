@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { API_CONFIG, apiRequest } from '../../config/api';
 
 interface Robot {
   _id: string;
@@ -39,13 +40,7 @@ export default function DashboardPage() {
   const fetchRobots = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8080/api/v1/robots');
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data: ApiResponse = await response.json();
+      const data: ApiResponse = await apiRequest<ApiResponse>(API_CONFIG.ENDPOINTS.ROBOTS);
       setRobots(data.items);
       setError(null);
     } catch (err) {
