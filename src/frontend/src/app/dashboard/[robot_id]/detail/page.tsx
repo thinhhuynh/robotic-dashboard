@@ -27,6 +27,21 @@ interface Robot {
   };
 }
 
+interface RobotHistory {
+  timestamp: string;
+  status: string;
+  battery: number;
+  temperature: number;
+  memory: number;
+  location?: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  event?: string;
+  message?: string;
+}
+
 export default function RobotDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -35,6 +50,15 @@ export default function RobotDetailPage() {
   const [robot, setRobot] = useState<Robot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'overview' | 'history'>('overview');
+  
+  // History data state
+  const [historyData, setHistoryData] = useState<RobotHistory[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+  const [historyHours, setHistoryHours] = useState(10);
   
   // WebSocket states
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
@@ -52,6 +76,25 @@ export default function RobotDetailPage() {
       console.error('Error fetching robot details:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRobotHistory = async (hours: number = 10) => {
+    try {
+      setHistoryLoading(true);
+      setHistoryError(null);
+      
+      const endpoint = `/robots/${robotId}/history?hours=${hours}`;
+      console.log(`📊 Fetching robot history: ${API_CONFIG.BASE_URL}${endpoint}`);
+      
+      const data: RobotHistory[] = await apiRequest<RobotHistory[]>(endpoint);
+      setHistoryData(data);
+      console.log(`✅ Loaded ${data.length} history records`);
+    } catch (err) {
+      setHistoryError(err instanceof Error ? err.message : 'Failed to fetch robot history');
+      console.error('Error fetching robot history:', err);
+    } finally {
+      setHistoryLoading(false);
     }
   };
 
@@ -118,6 +161,13 @@ export default function RobotDetailPage() {
       fetchRobotDetail();
     }
   }, [robotId]);
+
+  // Load history data when history tab is activated
+  useEffect(() => {
+    if (activeTab === 'history' && robotId && !historyLoading && historyData.length === 0) {
+      fetchRobotHistory(historyHours);
+    }
+  }, [activeTab, robotId, historyHours]);
 
   // Initialize WebSocket when robot data is loaded successfully
   useEffect(() => {
@@ -253,7 +303,49 @@ export default function RobotDetailPage() {
         </div>
       </div>
 
-      {/* Status Overview */}
+      {/* Tab Navigation */}
+      <div style={{ 
+        marginBottom: '24px',
+        borderBottom: '1px solid #d9d9d9'
+      }}>
+        <div style={{ display: 'flex', gap: '0' }}>
+          <button
+            onClick={() => setActiveTab('overview')}
+            style={{
+              padding: '12px 24px',
+              border: 'none',
+              borderBottom: activeTab === 'overview' ? '2px solid #1890ff' : '2px solid transparent',
+              backgroundColor: 'transparent',
+              color: activeTab === 'overview' ? '#1890ff' : '#666',
+              fontWeight: activeTab === 'overview' ? 'bold' : 'normal',
+              cursor: 'pointer',
+              fontSize: '16px'
+            }}
+          >
+            📊 Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('history')}
+            style={{
+              padding: '12px 24px',
+              border: 'none',
+              borderBottom: activeTab === 'history' ? '2px solid #1890ff' : '2px solid transparent',
+              backgroundColor: 'transparent',
+              color: activeTab === 'history' ? '#1890ff' : '#666',
+              fontWeight: activeTab === 'history' ? 'bold' : 'normal',
+              cursor: 'pointer',
+              fontSize: '16px'
+            }}
+          >
+            📈 History
+          </button>
+        </div>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'overview' && (
+        <>
+          {/* Status Overview */}
       <div style={{ 
         padding: '24px', 
         border: '1px solid #d9d9d9', 
@@ -601,6 +693,179 @@ export default function RobotDetailPage() {
           )}
         </div>
       </div>
+        </>
+      )}
+
+      {/* History Tab Content */}
+      {activeTab === 'history' && (
+        <div>
+          {/* History Controls */}
+          <div style={{ 
+            padding: '20px', 
+            border: '1px solid #d9d9d9', 
+            borderRadius: '8px',
+            marginBottom: '24px',
+            backgroundColor: '#fafafa'
+          }}>
+            <h3 style={{ marginBottom: '16px', color: '#1890ff' }}>📈 Robot History</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+              <label style={{ color: '#666', fontSize: '14px' }}>
+                Time Range:
+                <select 
+                  value={historyHours}
+                  onChange={(e) => setHistoryHours(Number(e.target.value))}
+                  style={{
+                    marginLeft: '8px',
+                    padding: '6px 12px',
+                    border: '1px solid #d9d9d9',
+                    borderRadius: '4px'
+                  }}
+                >
+                  <option value={1}>Last 1 hour</option>
+                  <option value={6}>Last 6 hours</option>
+                  <option value={10}>Last 10 hours</option>
+                  <option value={24}>Last 24 hours</option>
+                  <option value={168}>Last 7 days</option>
+                </select>
+              </label>
+              <button
+                onClick={() => fetchRobotHistory(historyHours)}
+                disabled={historyLoading}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: historyLoading ? '#d9d9d9' : '#1890ff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: historyLoading ? 'not-allowed' : 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                {historyLoading ? '🔄 Loading...' : '🔄 Refresh History'}
+              </button>
+            </div>
+            
+            {historyError && (
+              <div style={{ 
+                padding: '12px', 
+                backgroundColor: '#fff2f0', 
+                border: '1px solid #ffccc7',
+                borderRadius: '4px',
+                color: '#ff4d4f',
+                fontSize: '14px'
+              }}>
+                ❌ Error: {historyError}
+              </div>
+            )}
+          </div>
+
+          {/* History Data */}
+          <div style={{ 
+            padding: '20px', 
+            border: '1px solid #d9d9d9', 
+            borderRadius: '8px'
+          }}>
+            <h3 style={{ marginBottom: '16px', color: '#1890ff' }}>
+              📋 History Records ({historyData.length} entries)
+            </h3>
+            
+            {historyLoading ? (
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '40px',
+                color: '#666'
+              }}>
+                🔄 Loading history data...
+              </div>
+            ) : historyData.length === 0 ? (
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '40px',
+                color: '#666',
+                fontStyle: 'italic'
+              }}>
+                📭 No history data available for the selected time range
+              </div>
+            ) : (
+              <div style={{ 
+                maxHeight: '500px', 
+                overflowY: 'auto',
+                border: '1px solid #f0f0f0',
+                borderRadius: '4px'
+              }}>
+                {historyData.map((record, index) => (
+                  <div 
+                    key={index}
+                    style={{ 
+                      padding: '16px',
+                      borderBottom: index < historyData.length - 1 ? '1px solid #f0f0f0' : 'none',
+                      backgroundColor: index % 2 === 0 ? '#fafafa' : '#ffffff'
+                    }}
+                  >
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '8px'
+                    }}>
+                      <div style={{ 
+                        fontSize: '14px', 
+                        fontWeight: 'bold',
+                        color: '#262626'
+                      }}>
+                        {new Date(record.timestamp).toLocaleString()}
+                      </div>
+                      <div style={{
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        backgroundColor: 
+                          record.status === 'online' ? '#f6ffed' : 
+                          record.status === 'offline' ? '#fff2f0' : '#fff7e6',
+                        color:
+                          record.status === 'online' ? '#52c41a' : 
+                          record.status === 'offline' ? '#ff4d4f' : '#faad14'
+                      }}>
+                        {record.status.toUpperCase()}
+                      </div>
+                    </div>
+                    
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+                      gap: '12px',
+                      fontSize: '14px',
+                      color: '#666'
+                    }}>
+                      <div>🔋 Battery: <strong>{record.battery}%</strong></div>
+                      <div>🌡️ Temp: <strong>{record.temperature}°C</strong></div>
+                      <div>💾 Memory: <strong>{record.memory}%</strong></div>
+                      {record.location && (
+                        <div>📍 Location: <strong>({record.location.x.toFixed(1)}, {record.location.y.toFixed(1)})</strong></div>
+                      )}
+                    </div>
+                    
+                    {(record.event || record.message) && (
+                      <div style={{ 
+                        marginTop: '8px',
+                        padding: '8px 12px',
+                        backgroundColor: '#f0f0f0',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        color: '#595959'
+                      }}>
+                        {record.event && <div><strong>Event:</strong> {record.event}</div>}
+                        {record.message && <div><strong>Message:</strong> {record.message}</div>}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
