@@ -26,18 +26,15 @@ export function useRobotWebSocket(robotId: string, enabled: boolean = true) {
   useEffect(() => {
     if (!enabled || !robotId) return;
 
-    useEffect(() => {
-    if (!enabled || !robotId) return;
-
     const connectWebSocket = async () => {
       try {
         // Use Socket.IO client to connect to NestJS gateway
         const { io } = await import('socket.io-client');
         
-        console.log(`🔌 Connecting to NestJS Robot Gateway for robot: ${robotId}`);
+        console.log(`🔌 Connecting to Socket.IO for robot: ${robotId}`);
         setConnectionStatus('connecting');
 
-        const newSocket = io('http://localhost:8080/robot', {
+        const newSocket = io('http://localhost:8080', {
           transports: ['websocket', 'polling'],
           timeout: 10000,
           forceNew: true,
@@ -45,26 +42,26 @@ export function useRobotWebSocket(robotId: string, enabled: boolean = true) {
         });
 
         newSocket.on('connect', () => {
-          console.log('✅ Connected to NestJS Robot Gateway');
+          console.log('✅ Socket.IO connected');
           console.log(`📡 Socket ID: ${newSocket.id}`);
           setConnectionStatus('connected');
           
           // Subscribe to specific robot channel
           const robotChannel = `robot:${robotId}`;
           newSocket.emit('subscribe', robotChannel);
-          console.log(`� Subscribed to channel: ${robotChannel}`);
+          console.log(`📡 Subscribed to channel: ${robotChannel}`);
           
           // Request initial robot data
           newSocket.emit('get-robot-data', robotId);
         });
 
         newSocket.on('disconnect', () => {
-          console.log('❌ Disconnected from NestJS Robot Gateway');
+          console.log('❌ Socket.IO disconnected');
           setConnectionStatus('disconnected');
         });
 
         newSocket.on('connect_error', (error) => {
-          console.error('❌ NestJS Gateway connection error:', error);
+          console.error('❌ Socket.IO connection error:', error);
           setConnectionStatus('disconnected');
         });
 
@@ -103,7 +100,7 @@ export function useRobotWebSocket(robotId: string, enabled: boolean = true) {
         setSocket(newSocket);
 
       } catch (error) {
-        console.error('Failed to connect to NestJS Gateway:', error);
+        console.error('Failed to connect to Socket.IO:', error);
         console.log('💡 Install socket.io-client: npm install socket.io-client');
         setConnectionStatus('disconnected');
       }
@@ -111,66 +108,7 @@ export function useRobotWebSocket(robotId: string, enabled: boolean = true) {
 
     connectWebSocket();
 
-        ws.onopen = () => {
-          console.log('✅ WebSocket connected');
-          newSocket.connected = true;
-          setConnectionStatus('connected');
-          
-          // Subscribe to specific robot channel
-          const robotChannel = `robot:${robotId}`;
-          newSocket.emit('subscribe', robotChannel);
-          console.log(`📡 Subscribed to channel: ${robotChannel}`);
-          
-          // Request initial robot data
-          newSocket.emit('get-robot-data', robotId);
-        };
-
-        ws.onclose = () => {
-          console.log('❌ WebSocket disconnected');
-          newSocket.connected = false;
-          setConnectionStatus('disconnected');
-        };
-
-        ws.onerror = (error) => {
-          console.error('❌ WebSocket connection error:', error);
-          setConnectionStatus('disconnected');
-        };
-
-        ws.onmessage = (event) => {
-          try {
-            const message = JSON.parse(event.data);
-            const { event: eventName, data } = message;
-            
-            // Trigger appropriate event listeners
-            if (newSocket.eventListeners && newSocket.eventListeners.has(eventName)) {
-              newSocket.eventListeners.get(eventName).forEach((callback: Function) => {
-                callback(data);
-              });
-            }
-          } catch (error) {
-            console.error('Error parsing WebSocket message:', error);
-          }
-        };
-
-        newSocket.on('subscription-confirmed', (data) => {
-          console.log('✅ Subscription confirmed:', data);
-          addUpdate('subscription', data);
-        });
-
-        newSocket.on('command-confirmed', (data) => {
-          console.log('🎮 Command confirmed:', data);
-          addUpdate('command', data);
-        });
-
-        setSocket(newSocket);
-      } catch (error) {
-        console.error('Failed to load socket.io-client:', error);
-        setConnectionStatus('disconnected');
-      }
-    };
-
-    connectWebSocket();
-
+    // Cleanup function
     return () => {
       if (socket) {
         const robotChannel = `robot:${robotId}`;

@@ -28,7 +28,7 @@ RUN npm i
 
 # Copy built application from builder
 COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
+# COPY --from=builder /app/public ./public
 COPY --from=builder /app/next.config.js ./
 
 # Create non-root user

@@ -69,22 +69,22 @@ services:
     command: npm run cluster
 
   # Robot Simulator (for testing)
-  simulator:
-    build:
-      context: ./src/backend
-      dockerfile: Dockerfile
-    container_name: robot-fleet-simulator
-    restart: unless-stopped
-    environment:
-      WS_URL: ws://backend:9001/robot
-      NUM_ROBOTS: ${NUM_ROBOTS:-10}
-      UPDATE_INTERVAL: ${UPDATE_INTERVAL:-5000}
-    depends_on:
-      - backend
-    networks:
-      - robotic-dashboard-network
-    volumes:
-      - ./src/backend/simulator:/app
+  # simulator:
+  #   build:
+  #     context: ./src/backend
+  #     dockerfile: Dockerfile
+  #   container_name: robot-fleet-simulator
+  #   restart: unless-stopped
+  #   environment:
+  #     WS_URL: ws://backend:9001/robot
+  #     NUM_ROBOTS: ${NUM_ROBOTS:-10}
+  #     UPDATE_INTERVAL: ${UPDATE_INTERVAL:-5000}
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - robotic-dashboard-network
+  #   volumes:
+  #     - ./src/backend/simulator:/app
 
   # Frontend Next.js Application
   frontend:
