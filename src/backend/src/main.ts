@@ -66,7 +66,8 @@ async function bootstrap() {
     console.log(`📖 API Docs: http://localhost:${PORT}/api/v1/docs`);
     console.log(`🩺 Health Check: http://localhost:${PORT}/health`);
     console.log(`🔌 WebSocket: ws://localhost:${PORT}`);
-    console.log(`� Dashboard WebSocket: ws://localhost:${PORT}/dashboard`);
+    console.log(`�  Dashboard WebSocket: ws://localhost:${PORT}/dashboard`);
+    console.log(`�  Robot WebSocket: ws://localhost:${PORT}/robot`);
     console.log(`🧪 WebSocket Test: http://localhost:${PORT}/websocket/test`);
     console.log('🎉 ======================================');
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);

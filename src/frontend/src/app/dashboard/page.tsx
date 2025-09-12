@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { API_CONFIG, apiRequest } from '../../config/api';
-import WS_CONFIG, { logWebSocketConnection } from '@/config/websocket.config';
 
 interface Robot {
   _id: string;
