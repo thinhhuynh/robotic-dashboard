@@ -18,10 +18,12 @@ services:
     networks:
       - robotic-dashboard-network
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      test: |
+        echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet || exit 1
       interval: 10s
-      timeout: 5s
+      timeout: 10s
       retries: 5
+      start_period: 30s
 
   # Redis for Pub/Sub (optional, for scaling)
   redis:
@@ -35,16 +37,17 @@ services:
     networks:
       - robotic-dashboard-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
   # Backend WebSocket Server
   backend:
     build:
       context: ./src/backend
-      dockerfile: Dockerfile.simple
+      dockerfile: Dockerfile
     container_name: robotic-dashboard-backend
     restart: unless-stopped
     ports:
@@ -53,20 +56,23 @@ services:
       NODE_ENV: production
       MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-roboticDashboard123}@mongodb:27017/robotic-dashboard?authSource=admin
       REDIS_URL: redis://redis:6379
-      WS_PORT: 8080
-      WORKERS: ${WORKERS:-4}
-      USE_REDIS_PUBSUB: "true"
+      PORT: 8080
+      SEED_ON_START: "true"
     depends_on:
       mongodb:
         condition: service_healthy
+        restart: true
       redis:
         condition: service_healthy
+        restart: true
     networks:
       - robotic-dashboard-network
-    volumes:
-      - ./src/backend:/app
-      - /app/node_modules
-    command: npm run start:prod
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   # Robot Simulator (for testing)
   # simulator:
@@ -97,16 +103,22 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_BASE_URL: http://localhost:8080
+      NEXT_PUBLIC_API_URL: http://localhost:8080
       NEXT_PUBLIC_WS_URL: http://localhost:8080
+      NEXT_PUBLIC_WS_DASHBOARD_URL: http://localhost:8080/dashboard
+      NEXT_PUBLIC_WS_ROBOT_URL: http://localhost:8080
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+        restart: true
     networks:
       - robotic-dashboard-network
-    volumes:
-      - ./src/frontend:/app
-      - /app/node_modules
-      - /app/.next
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   # Nginx Load Balancer (optional, for multiple backend instances)
   # nginx:

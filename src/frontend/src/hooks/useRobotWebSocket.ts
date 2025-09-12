@@ -1,5 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 
+// WebSocket Configuration
+const WS_CONFIG = {
+  ROBOT_URL: process.env.NEXT_PUBLIC_WS_ROBOT_URL || 'http://localhost:8080',
+  OPTIONS: {
+    transports: ['websocket', 'polling'],
+    timeout: 10000,
+    forceNew: true,
+    autoConnect: true,
+  },
+};
+
 interface RobotUpdate {
   timestamp: string;
   type: 'update' | 'status' | 'full-data' | 'subscription' | 'command' | 'command-sent';
@@ -34,12 +45,9 @@ export function useRobotWebSocket(robotId: string, enabled: boolean = true) {
         console.log(`🔌 Connecting to Socket.IO for robot: ${robotId}`);
         setConnectionStatus('connecting');
 
-        const newSocket = io('http://localhost:8080', {
-          transports: ['websocket', 'polling'],
-          timeout: 10000,
-          forceNew: true,
-          autoConnect: true,
-        });
+        console.log(`📡 Robot WebSocket URL: ${WS_CONFIG.ROBOT_URL}`);
+
+        const newSocket = io(WS_CONFIG.ROBOT_URL, WS_CONFIG.OPTIONS);
 
         newSocket.on('connect', () => {
           console.log('✅ Socket.IO connected');

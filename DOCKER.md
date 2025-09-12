@@ -103,7 +103,7 @@ CORS_ORIGIN=http://localhost:3000
 ```env
 NODE_ENV=production
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
-NEXT_PUBLIC_WS_URL=http://localhost:8080
+NEXT_PUBLIC_WS_BASE_URL=http://localhost:8080
 ```
 
 ## 📊 Sample Data

@@ -59,11 +59,20 @@ async function bootstrap() {
   app.useWebSocketAdapter(new SocketIoAdapter(app));
 
   await app.listen(PORT, () => {
-    console.log(`🚀 Application running on port ${PORT}`);
+    console.log('🎉 ======================================');
+    console.log('🚀 Robotic Dashboard Backend Started!');
+    console.log('🎉 ======================================');
     console.log(`📡 REST API: http://localhost:${PORT}`);
     console.log(`📖 API Docs: http://localhost:${PORT}/api/v1/docs`);
-    console.log(`🔌 WebSocket: ws://localhost:${PORT}/socket.io`);
-    console.log(`💡 Test WebSocket: Open browser console and connect to ws://localhost:${PORT}`);
+    console.log(`🩺 Health Check: http://localhost:${PORT}/health`);
+    console.log(`🔌 WebSocket: ws://localhost:${PORT}`);
+    console.log(`� Dashboard WebSocket: ws://localhost:${PORT}/dashboard`);
+    console.log(`🧪 WebSocket Test: http://localhost:${PORT}/websocket/test`);
+    console.log('🎉 ======================================');
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`📊 Database: ${process.env.MONGODB_URI ? 'Connected' : 'Not configured'}`);
+    console.log(`🔄 Redis: ${process.env.REDIS_URL ? 'Available' : 'Not configured'}`);
+    console.log('🎉 ======================================');
   });
 }
 bootstrap();

@@ -97,6 +97,18 @@ CORS_ORIGIN=http://localhost:3000" > .env
         npm install
         npm install socket.io-client@^4.8.1
         
+        # Create frontend environment file with WebSocket URLs
+        if [ ! -f ".env.local" ]; then
+            echo "🔧 Creating frontend environment configuration..."
+            echo "# API Configuration
+NEXT_PUBLIC_API_URL=http://localhost:8080
+
+# WebSocket Configuration  
+NEXT_PUBLIC_WS_BASE_URL=http://localhost:8080
+NEXT_PUBLIC_WS_DASHBOARD_URL=http://localhost:8080/dashboard
+NEXT_PUBLIC_WS_ROBOT_URL=http://localhost:8080" > .env.local
+        fi
+        
         echo "🚀 Starting frontend..."
         npm run dev &
         FRONTEND_PID=$!
@@ -168,6 +180,18 @@ CORS_ORIGIN=http://localhost:3000" > .env
         cd src/frontend
         npm install
         npm install socket.io-client@^4.8.1
+        
+        # Create frontend environment file for Docker backend
+        if [ ! -f ".env.local" ]; then
+            echo "🔧 Creating frontend environment configuration for Docker backend..."
+            echo "# API Configuration (Docker backend)
+NEXT_PUBLIC_API_URL=http://localhost:8080
+
+# WebSocket Configuration (Docker backend)
+NEXT_PUBLIC_WS_BASE_URL=http://localhost:8080
+NEXT_PUBLIC_WS_DASHBOARD_URL=http://localhost:8080/dashboard
+NEXT_PUBLIC_WS_ROBOT_URL=http://localhost:8080" > .env.local
+        fi
         
         echo "🚀 Starting frontend..."
         npm run dev &

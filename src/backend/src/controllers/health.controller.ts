@@ -15,7 +15,7 @@ export class HealthController {
       websockets: {
         robot: {
           namespace: '/',
-          endpoint: 'ws://localhost:8080/socket.io/',
+          endpoint: 'http://localhost:8080',
           description: 'Individual robot control and monitoring'
         },
         dashboard: {

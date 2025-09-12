@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { API_CONFIG, apiRequest } from '../../config/api';
+import WS_CONFIG, { logWebSocketConnection } from '@/config/websocket.config';
 
 interface Robot {
   _id: string;
@@ -65,7 +66,10 @@ export default function DashboardPage() {
       // Use Socket.IO client to connect to dashboard namespace
       const { io } = await import('socket.io-client');
       
-      const socket = io('http://localhost:8080/dashboard', {
+      const wsUrl = process.env.NEXT_PUBLIC_WS_DASHBOARD_URL || 'http://localhost:8080/dashboard';
+      console.log(`📡 Dashboard WebSocket URL: ${wsUrl}`);
+      
+      const socket = io(wsUrl, {
         transports: ['websocket', 'polling'],
         timeout: 10000,
         forceNew: true,

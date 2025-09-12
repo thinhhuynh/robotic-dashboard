@@ -310,7 +310,7 @@ docker system prune -f          # Clean unused images
 | Frontend | http://localhost:3000 | React dashboard |
 | Backend API | http://localhost:8080 | NestJS REST API |
 | API Docs | http://localhost:8080/api/docs | Swagger documentation |
-| WebSocket | ws://localhost:8080/socket.io | Socket.IO endpoint |
+| WebSocket | ws://localhost:8080 | Socket.IO endpoint |
 | Health Check | http://localhost:8080/health | Service health |
 | MongoDB | mongodb://localhost:27017 | Database |
 
@@ -345,7 +345,7 @@ WEBSOCKET_PORT=8080
 ```env
 # API Configuration
 NEXT_PUBLIC_API_URL=http://localhost:8080
-NEXT_PUBLIC_WS_URL=http://localhost:8080
+NEXT_PUBLIC_WS_BASE_URL=http://localhost:8080
 ```
 
 ---

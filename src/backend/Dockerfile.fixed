@@ -1,8 +1,8 @@
 # Simple Backend Dockerfile without mongosh dependency
 FROM node:22-alpine
 
-# Install system dependencies (sorted alphabetically)
-RUN apk add --no-cache bash curl netcat-openbsd wget
+# Install system dependencies
+RUN apk add --no-cache wget curl bash
 
 # Set working directory
 WORKDIR /app
@@ -21,11 +21,11 @@ RUN npm run build
 
 # Copy and set up simplified entrypoint script
 COPY docker-entrypoint-simple.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Create non-root user and set permissions
+# Create non-root user
 RUN addgroup -g 1001 -S weenapp && \
     adduser -S weenapp -u 1001 && \
-    chmod +x /usr/local/bin/docker-entrypoint.sh && \
     chown -R weenapp:weenapp /app && \
     chown weenapp:weenapp /usr/local/bin/docker-entrypoint.sh
 
